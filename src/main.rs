@@ -107,8 +107,7 @@ impl ops::Add<BigInt> for BigInt {
     type Output = BigInt;
 
     fn add(self, rhs: BigInt) -> BigInt {
-        let mut result: BigInt;
-        let mut resdigit: [u64; KETA] = [0; KETA];
+        let mut result: BigInt = BigInt::new();
         let mut carry: u64 = 0;
         // ignore 0 prefix
         let most_d: usize = {
@@ -127,10 +126,9 @@ impl ops::Add<BigInt> for BigInt {
         if self.plus ^ rhs.plus == false {
             for i in 0..most_d {
                 let sum: u64 = self.digit[i] + rhs.digit[i] + carry;
-                resdigit[i] = sum % RADIX;
+                result.digit[i] = sum % RADIX;
                 carry = if sum >= RADIX { 1 } else { 0 };
             }
-            result = BigInt::from(resdigit);
             result.plus = self.plus;
         } else {
             panic!("unimplemented!");
@@ -138,7 +136,7 @@ impl ops::Add<BigInt> for BigInt {
         if carry != 0 {
             panic!("overflow!");
         }
-        eprintln!("{} + {}", self, rhs);
+        // eprintln!("{} + {}", self, rhs);
         result
     }
 }
@@ -148,7 +146,7 @@ fn check_same_sign_add() {
     let a = BigInt::from([5; KETA]);
     let b = BigInt::from([5; KETA]);
     assert_eq!(a + b, BigInt::from([10; KETA]));
-    println!("{}", a + b);
+    // println!("{}", a + b);
 
     println!("plus-plus carry addition");
     println!("...500000000500000000 + ...500000000500000000 = ...1000000001000000000",);
@@ -159,7 +157,7 @@ fn check_same_sign_add() {
     let mut expected = BigInt::from([1; KETA]);
     expected.digit[0] = 0;
     assert_eq!(a + b, expected);
-    println!("{:?}", a + b);
+    // println!("{:?}", a + b);
 
     println!("minus-minus addition");
     let mut a = BigInt::from([3; KETA]);
@@ -200,9 +198,13 @@ impl ops::Sub<BigInt> for BigInt {
                 result.plus = self.plus;
             } else {
                 std::mem::swap(&mut lhs, &mut rhs);
-                result.plus = !result.plus;
+                result.plus = !self.plus;
             }
+        } else {
+            result.plus = self.plus;
         }
+        println!("{:?}", lhs);
+        println!("{:?}", rhs);
         let most_d: usize = {
             let mut msd: usize = KETA;
             for i in (0..KETA).rev() {
@@ -230,11 +232,35 @@ impl ops::Sub<BigInt> for BigInt {
 
 #[test]
 fn check_same_sign_minus() {
+    println!("trivial plus-plus subtraction");
+    let a = BigInt::from([1; KETA]);
+    let b = BigInt::from([12; KETA]);
+    let mut expected = BigInt::from([11; KETA]);
+    assert_eq!(b - a, expected);
+    println!("{}", b - a);
+    expected.plus = !expected.plus;
+    assert_eq!(a - b, expected);
+    println!("{}", a - b);
+
+    println!("trivial plus-plus subtraction");
+    let mut a = BigInt::from([1; KETA]);
+    let mut b = BigInt::from([12; KETA]);
+    a.plus = !a.plus;
+    b.plus = !b.plus;
+    let mut expected = BigInt::from([11; KETA]);
+    assert_eq!(a - b, expected);
+    println!("{}", a - b);
+    expected.plus = !expected.plus;
+    assert_eq!(b - a, expected);
+    println!("{}", b - a);
+}
+
+#[test]
+fn check_different_sign_minus() {
     // trivial subtraction
     let a = BigInt::from([1; KETA]);
     let b = BigInt::from([12; KETA]);
-    println!("{}", a - b);
-    println!("{}", b - a);
+    println!("{}", (a - b) - b);
 }
 
 impl ops::Mul<BigInt> for BigInt {
