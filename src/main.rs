@@ -42,22 +42,6 @@ impl From<[u64; KETA]> for BigInt {
     }
 }
 
-// 32KETA以上の場合はPartialEq がunderivable
-impl PartialEq for BigInt {
-    fn eq(&self, other: &Self) -> bool {
-        if self.plus != other.plus {
-            false
-        } else {
-            for i in 0..KETA {
-                if self.digit[i] != other.digit[i] {
-                    return false;
-                }
-            }
-            true
-        }
-    }
-}
-
 //Display number
 // +11111
 impl fmt::Display for BigInt {
@@ -103,6 +87,39 @@ impl fmt::Debug for BigInt {
     }
 }
 
+// 32KETA以上の場合はPartialEq がunderivable
+impl PartialEq for BigInt {
+    fn eq(&self, other: &Self) -> bool {
+        if self.plus != other.plus {
+            false
+        } else {
+            for i in 0..KETA {
+                if self.digit[i] != other.digit[i] {
+                    return false;
+                }
+            }
+            true
+        }
+    }
+}
+
+impl std::ops::Neg for BigInt {
+    type Output = BigInt;
+
+    fn neg(self) -> Self::Output {
+        BigInt {
+            digit: self.digit,
+            plus: !self.plus,
+        }
+    }
+}
+#[test]
+fn check_negation() {
+    let a = BigInt::from([5; KETA]);
+    let mut expected = BigInt::from([5; KETA]);
+    expected.plus = !expected.plus;
+    assert_eq!(-a, expected);
+}
 impl ops::Add<BigInt> for BigInt {
     type Output = BigInt;
 
