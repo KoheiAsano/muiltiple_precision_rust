@@ -4,14 +4,17 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "cargo",
-            "subcommand": "run",
-            "problemMatcher": [
-                "$rustc"
+            "type": "shell",
+            "label": "test",
+            "command": "cargo",
+            "args": [
+                "test",
+                "--",
+                "--nocapture"
             ],
             "group": {
                 "kind": "build",
-                "isDefault": true,
+                "isDefault": true
             }
         }
     ]
