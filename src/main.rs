@@ -90,14 +90,21 @@ impl fmt::Debug for BigInt {
 // 32KETA以上の場合はPartialEq がunderivable
 impl PartialEq for BigInt {
     fn eq(&self, other: &Self) -> bool {
+        // temporary ignore zero's sign
+        let mut iszero = true;
+        for i in 0..KETA {
+            if self.digit[i] != other.digit[i] {
+                return false;
+            } else if iszero && (self.digit[i] != 0 || other.digit[i] != 0) {
+                iszero = false;
+            }
+        }
+        if iszero {
+            return true;
+        }
         if self.plus != other.plus {
             false
         } else {
-            for i in 0..KETA {
-                if self.digit[i] != other.digit[i] {
-                    return false;
-                }
-            }
             true
         }
     }
