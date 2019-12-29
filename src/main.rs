@@ -8,7 +8,7 @@ const RADIX: u64 = 1000000000;
 #[derive(Clone, Copy)]
 pub struct BigInt {
     digit: [u64; KETA],
-    sign: char,
+    plus: bool,
 }
 
 // 0で初期化
@@ -16,7 +16,7 @@ impl BigInt {
     fn new() -> Self {
         BigInt {
             digit: [0; KETA],
-            sign: '+',
+            plus: true,
         }
     }
     // 絶対値の大小比較 >=
@@ -37,7 +37,7 @@ impl From<[u64; KETA]> for BigInt {
     fn from(d: [u64; KETA]) -> Self {
         BigInt {
             digit: d,
-            sign: '+',
+            plus: true,
         }
     }
 }
@@ -45,7 +45,7 @@ impl From<[u64; KETA]> for BigInt {
 // 32KETA以上の場合はPartialEq がunderivable
 impl PartialEq for BigInt {
     fn eq(&self, other: &Self) -> bool {
-        if self.sign != other.sign {
+        if self.plus != other.plus {
             false
         } else {
             for i in 0..KETA {
@@ -63,6 +63,7 @@ impl PartialEq for BigInt {
 impl fmt::Display for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
+        let sign = if self.plus { '-' } else { '+' };
         let most_d: usize = {
             let mut msd: usize = KETA;
             for i in (0..KETA).rev() {
@@ -80,13 +81,14 @@ impl fmt::Display for BigInt {
                 res
             );
         }
-        write!(f, "{}{}", self.sign, res)
+        write!(f, "{}{}", sign, res)
     }
 }
 
 impl fmt::Debug for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
+        let sign = if self.plus { '-' } else { '+' };
 
         for i in 0..KETA {
             res = format!(
@@ -95,7 +97,7 @@ impl fmt::Debug for BigInt {
                 res
             );
         }
-        write!(f, "{}{}", self.sign, res)
+        write!(f, "{}{}", sign, res)
     }
 }
 
@@ -120,13 +122,14 @@ impl ops::Add<BigInt> for BigInt {
         };
 
         // + and +, - and -
-        if (self.sign == '+' && rhs.sign == '+') || (self.sign == '-' && rhs.sign == '-') {
+        if self.plus ^ rhs.plus == false {
             for i in 0..most_d {
                 let sum: u64 = self.digit[i] + rhs.digit[i] + carry;
                 resdigit[i] = sum % RADIX;
                 carry = if sum >= RADIX { 1 } else { 0 };
             }
             result = BigInt::from(resdigit);
+            result.plus = self.plus;
         } else {
             panic!("unimplemented!");
         }
@@ -134,7 +137,6 @@ impl ops::Add<BigInt> for BigInt {
             panic!("overflow!");
         }
         println!("{} + {}", self, rhs);
-        result.sign = self.sign;
         result
     }
 }
@@ -160,10 +162,10 @@ fn check_same_sign_add() {
     println!("minus-minus addition");
     let mut a = BigInt::from([3; KETA]);
     let mut b = BigInt::from([3; KETA]);
-    a.sign = '-';
-    b.sign = '-';
+    a.plus = false;
+    b.plus = false;
     let mut expected = BigInt::from([6; KETA]);
-    expected.sign = '-';
+    expected.plus = false;
     assert_eq!(a + b, expected);
     println!("{:?}", a + b);
 
@@ -173,11 +175,11 @@ fn check_same_sign_add() {
     let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
     a.digit[KETA - 1] = 0;
     b.digit[KETA - 1] = 0;
-    a.sign = '-';
-    b.sign = '-';
+    a.plus = false;
+    b.plus = false;
     let mut expected = BigInt::from([1; KETA]);
     expected.digit[0] = 0;
-    expected.sign = '-';
+    expected.plus = false;
     assert_eq!(a + b, expected);
     println!("{:?}", a + b);
 }
@@ -190,12 +192,12 @@ impl ops::Sub<BigInt> for BigInt {
         let mut rhs = rhs;
         let mut result: BigInt = BigInt::from([0; KETA]);
         // sign calculate and swap
-        if (lhs.sign == '+' && rhs.sign == '+') || (lhs.sign == '-' && rhs.sign == '-') {
+        if lhs.plus ^ rhs.plus == false {
             if self.absIsBigger(rhs) {
-                result.sign = self.sign;
+                result.plus = self.plus;
             } else {
                 std::mem::swap(&mut lhs, &mut rhs);
-                result.sign = if self.sign == '+' { '-' } else { '+' };
+                result.plus = !result.plus;
             }
         }
         // 大きい方から小さい方を引く
