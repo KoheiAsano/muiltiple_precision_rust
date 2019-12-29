@@ -126,33 +126,39 @@ impl ops::Add<BigInt> for BigInt {
 
     fn add(self, rhs: BigInt) -> BigInt {
         let mut result: BigInt = BigInt::new();
-        let mut carry: u64 = 0;
-        // ignore 0 prefix
-        let most_d: usize = {
-            let mut msd: usize = KETA;
-            for i in (0..KETA).rev() {
-                if self.digit[i] != 0 || rhs.digit[i] != 0 {
-                    msd = i + 1;
-                    break;
-                }
-            }
-            // carryがあるので+1
-            std::cmp::min(msd + 1, KETA)
-        };
 
-        // + and +, - and -
+        // (+a) + (+b), (-a) + (-b) => sign*|a| + |b|
+        // (-a) - (+b), (+a) - (-b) => sign*|b| - |a|
+
         if self.plus ^ rhs.plus == false {
+            result.plus = self.plus;
+            let mut carry: u64 = 0;
+            // ignore 0 prefix
+            let most_d: usize = {
+                let mut msd: usize = KETA;
+                for i in (0..KETA).rev() {
+                    if self.digit[i] != 0 || rhs.digit[i] != 0 {
+                        msd = i + 1;
+                        break;
+                    }
+                }
+                // carryがあるので+1
+                std::cmp::min(msd + 1, KETA)
+            };
             for i in 0..most_d {
                 let sum: u64 = self.digit[i] + rhs.digit[i] + carry;
                 result.digit[i] = sum % RADIX;
                 carry = if sum >= RADIX { 1 } else { 0 };
             }
-            result.plus = self.plus;
+            if carry != 0 {
+                panic!("overflow!");
+            }
         } else {
-            panic!("unimplemented!");
-        }
-        if carry != 0 {
-            panic!("overflow!");
+            if self.plus {
+                result = -(-rhs - self);
+            } else {
+                result = rhs - (-self);
+            }
         }
         // eprintln!("{} + {}", self, rhs);
         result
@@ -190,6 +196,15 @@ fn check_same_sign_add() {
     let mut expected = BigInt::from([1; KETA]);
     expected.digit[0] = 0;
     assert_eq!(-a + -b, -expected);
+}
+
+#[test]
+fn check_different_sign_add() {
+    println!("plus-minus addition");
+    let a = BigInt::from([5; KETA]);
+    let b = BigInt::from([5; KETA]);
+    assert_eq!(a + -b, BigInt::from([0; KETA]));
+    assert_eq!(-b + a, BigInt::from([0; KETA]));
 }
 
 impl ops::Sub<BigInt> for BigInt {
