@@ -19,10 +19,7 @@ impl BigInt {
             sign: '+',
         }
     }
-}
-
-// 絶対値の大小比較 >=
-impl BigInt {
+    // 絶対値の大小比較 >=
     fn absIsBigger(&self, other: BigInt) -> bool {
         for i in (0..KETA).rev() {
             if self.digit[i] > other.digit[i] {
@@ -189,11 +186,15 @@ impl ops::Sub<BigInt> for BigInt {
     type Output = BigInt;
 
     fn sub(self, rhs: BigInt) -> BigInt {
+        let mut lhs = self;
+        let mut rhs = rhs;
         let mut result: BigInt = BigInt::from([0; KETA]);
-        if (self.sign == '+' && self.sign == '+') || (self.sign == '-' && self.sign == '-') {
+        // sign calculate and swap
+        if (lhs.sign == '+' && rhs.sign == '+') || (lhs.sign == '-' && rhs.sign == '-') {
             if self.absIsBigger(rhs) {
                 result.sign = self.sign;
             } else {
+                std::mem::swap(&mut lhs, &mut rhs);
                 result.sign = if self.sign == '+' { '-' } else { '+' };
             }
         }
