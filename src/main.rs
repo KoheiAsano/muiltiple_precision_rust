@@ -20,6 +20,7 @@ impl BigInt {
         }
     }
 }
+
 // u64配列から正数を作る
 impl From<[u64; KETA]> for BigInt {
     fn from(d: [u64; KETA]) -> Self {
@@ -46,20 +47,6 @@ impl PartialEq for BigInt {
     }
 }
 
-impl fmt::Debug for BigInt {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut res: String = String::new();
-
-        for i in 0..KETA {
-            res = format!(
-                "{}{}",
-                format!("{:0RLENGTH$}", self.digit[i], RLENGTH = 9),
-                res
-            );
-        }
-        write!(f, "{}{}", self.sign, res)
-    }
-}
 //Display number
 // +11111
 impl fmt::Display for BigInt {
@@ -86,11 +73,26 @@ impl fmt::Display for BigInt {
     }
 }
 
+impl fmt::Debug for BigInt {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut res: String = String::new();
+
+        for i in 0..KETA {
+            res = format!(
+                "{}{}",
+                format!("{:0RLENGTH$}", self.digit[i], RLENGTH = 9),
+                res
+            );
+        }
+        write!(f, "{}{}", self.sign, res)
+    }
+}
+
 impl ops::Add<BigInt> for BigInt {
     type Output = BigInt;
 
     fn add(self, rhs: BigInt) -> BigInt {
-        let result: BigInt;
+        let mut result: BigInt;
         let mut resdigit: [u64; KETA] = [0; KETA];
         let mut carry: u64 = 0;
         // ignore 0 prefix
@@ -106,8 +108,8 @@ impl ops::Add<BigInt> for BigInt {
             std::cmp::min(msd + 1, KETA)
         };
 
-        // + and +
-        if self.sign == '+' && rhs.sign == '+' {
+        // + and +, - and -
+        if (self.sign == '+' && rhs.sign == '+') || (self.sign == '-' && rhs.sign == '-') {
             for i in 0..most_d {
                 let sum: u64 = self.digit[i] + rhs.digit[i] + carry;
                 resdigit[i] = sum % RADIX;
@@ -121,17 +123,19 @@ impl ops::Add<BigInt> for BigInt {
             panic!("overflow!");
         }
         println!("{} + {}", self, rhs);
+        result.sign = self.sign;
         result
     }
 }
 #[test]
-fn check_posi_posi_add() {
-    println!("trivial addition");
+fn check_same_sign_add() {
+    println!("plus-plus addition");
     let a = BigInt::from([5; KETA]);
     let b = BigInt::from([5; KETA]);
     assert_eq!(a + b, BigInt::from([10; KETA]));
     println!("{}", a + b);
-    println!("carry addition");
+
+    println!("plus-plus carry addition");
     println!("...500000000500000000 + ...500000000500000000 = ...1000000001000000000",);
     let mut a = BigInt::from([10u64.pow(9) / 2; KETA]);
     let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
@@ -139,6 +143,30 @@ fn check_posi_posi_add() {
     b.digit[KETA - 1] = 0;
     let mut expected = BigInt::from([1; KETA]);
     expected.digit[0] = 0;
+    assert_eq!(a + b, expected);
+    println!("{:?}", a + b);
+
+    println!("minus-minus addition");
+    let mut a = BigInt::from([3; KETA]);
+    let mut b = BigInt::from([3; KETA]);
+    a.sign = '-';
+    b.sign = '-';
+    let mut expected = BigInt::from([6; KETA]);
+    expected.sign = '-';
+    assert_eq!(a + b, expected);
+    println!("{:?}", a + b);
+
+    println!("carry minus-minus addition");
+    println!("-...500000000500000000 + -...500000000500000000 = -...1000000001000000000",);
+    let mut a = BigInt::from([10u64.pow(9) / 2; KETA]);
+    let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
+    a.digit[KETA - 1] = 0;
+    b.digit[KETA - 1] = 0;
+    a.sign = '-';
+    b.sign = '-';
+    let mut expected = BigInt::from([1; KETA]);
+    expected.digit[0] = 0;
+    expected.sign = '-';
     assert_eq!(a + b, expected);
     println!("{:?}", a + b);
 }
@@ -152,8 +180,6 @@ impl ops::Mul<BigInt> for BigInt {
         self
     }
 }
-
-impl BigInt {}
 
 fn main() {
     let b0 = BigInt::new();
