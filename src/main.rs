@@ -74,13 +74,15 @@ impl fmt::Display for BigInt {
             }
             msd
         };
-        for i in 0..most_d {
+        for i in 0..most_d - 1 {
             res = format!(
                 "{}{}",
                 format!("{:0RLENGTH$}", self.digit[i], RLENGTH = 9),
                 res
             );
         }
+        // most significant digit should'nt be pad
+        res = format!("{}{}", format!("{}", self.digit[most_d - 1]), res);
         write!(f, "{}{}", sign, res)
     }
 }
@@ -136,7 +138,7 @@ impl ops::Add<BigInt> for BigInt {
         if carry != 0 {
             panic!("overflow!");
         }
-        println!("{} + {}", self, rhs);
+        eprintln!("{} + {}", self, rhs);
         result
     }
 }
@@ -190,6 +192,7 @@ impl ops::Sub<BigInt> for BigInt {
     fn sub(self, rhs: BigInt) -> BigInt {
         let mut lhs = self;
         let mut rhs = rhs;
+        let mut borrow: u64 = 0;
         let mut result: BigInt = BigInt::from([0; KETA]);
         // sign calculate and swap
         if lhs.plus ^ rhs.plus == false {
@@ -200,13 +203,39 @@ impl ops::Sub<BigInt> for BigInt {
                 result.plus = !result.plus;
             }
         }
-        // 大きい方から小さい方を引く
+        let most_d: usize = {
+            let mut msd: usize = KETA;
+            for i in (0..KETA).rev() {
+                if lhs.digit[i] != 0 || rhs.digit[i] != 0 {
+                    msd = i + 1;
+                    break;
+                }
+            }
+            msd
+        };
+        for i in 0..most_d {
+            let li = lhs.digit[i] - borrow;
+            let ri = rhs.digit[i];
+            if li >= ri {
+                borrow = 0;
+                result.digit[i] = li - ri;
+            } else {
+                borrow = 1;
+                result.digit[i] = RADIX + li - ri;
+            }
+        }
         result
     }
 }
 
 #[test]
-fn check_same_sign_minus() {}
+fn check_same_sign_minus() {
+    // trivial subtraction
+    let a = BigInt::from([1; KETA]);
+    let b = BigInt::from([12; KETA]);
+    println!("{}", a - b);
+    println!("{}", b - a);
+}
 
 impl ops::Mul<BigInt> for BigInt {
     type Output = BigInt;
