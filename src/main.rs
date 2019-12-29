@@ -21,6 +21,20 @@ impl BigInt {
     }
 }
 
+// 絶対値の大小比較 >=
+impl BigInt {
+    fn absIsBigger(&self, other: BigInt) -> bool {
+        for i in (0..KETA).rev() {
+            if self.digit[i] > other.digit[i] {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 // u64配列から正数を作る
 impl From<[u64; KETA]> for BigInt {
     fn from(d: [u64; KETA]) -> Self {
@@ -170,6 +184,26 @@ fn check_same_sign_add() {
     assert_eq!(a + b, expected);
     println!("{:?}", a + b);
 }
+
+impl ops::Sub<BigInt> for BigInt {
+    type Output = BigInt;
+
+    fn sub(self, rhs: BigInt) -> BigInt {
+        let mut result: BigInt = BigInt::from([0; KETA]);
+        if (self.sign == '+' && self.sign == '+') || (self.sign == '-' && self.sign == '-') {
+            if self.absIsBigger(rhs) {
+                result.sign = self.sign;
+            } else {
+                result.sign = if self.sign == '+' { '-' } else { '+' };
+            }
+        }
+        // 大きい方から小さい方を引く
+        result
+    }
+}
+
+#[test]
+fn check_same_sign_minus() {}
 
 impl ops::Mul<BigInt> for BigInt {
     type Output = BigInt;
