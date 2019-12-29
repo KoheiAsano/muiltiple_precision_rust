@@ -192,7 +192,9 @@ impl ops::Sub<BigInt> for BigInt {
         let mut rhs = rhs;
         let mut borrow: u64 = 0;
         let mut result: BigInt = BigInt::from([0; KETA]);
-        // sign calculate and swap
+        // calculate sign and swap
+        // (+a) - (+b), (-a) - (-b) => sign*|a| - |b|
+        // (-a) - (+b), (+a) - (-b) => sign*|a| + |b|
         if lhs.plus ^ rhs.plus == false {
             if self.absIsBigger(rhs) {
                 result.plus = self.plus;
@@ -200,33 +202,41 @@ impl ops::Sub<BigInt> for BigInt {
                 std::mem::swap(&mut lhs, &mut rhs);
                 result.plus = !self.plus;
             }
-        } else {
-            result.plus = self.plus;
-        }
-        println!("{:?}", lhs);
-        println!("{:?}", rhs);
-        let most_d: usize = {
-            let mut msd: usize = KETA;
-            for i in (0..KETA).rev() {
-                if lhs.digit[i] != 0 || rhs.digit[i] != 0 {
-                    msd = i + 1;
-                    break;
+            // subtract
+            let most_d: usize = {
+                let mut msd: usize = KETA;
+                for i in (0..KETA).rev() {
+                    if lhs.digit[i] != 0 || rhs.digit[i] != 0 {
+                        msd = i + 1;
+                        break;
+                    }
+                }
+                msd
+            };
+            for i in 0..most_d {
+                let li = lhs.digit[i] - borrow;
+                let ri = rhs.digit[i];
+                if li >= ri {
+                    borrow = 0;
+                    result.digit[i] = li - ri;
+                } else {
+                    borrow = 1;
+                    result.digit[i] = RADIX + li - ri;
                 }
             }
-            msd
-        };
-        for i in 0..most_d {
-            let li = lhs.digit[i] - borrow;
-            let ri = rhs.digit[i];
-            if li >= ri {
-                borrow = 0;
-                result.digit[i] = li - ri;
+            result
+        } else {
+            // let rhs's sign be same to lhs
+            rhs.plus = lhs.plus;
+            if self.absIsBigger(rhs) {
+                result.plus = self.plus;
             } else {
-                borrow = 1;
-                result.digit[i] = RADIX + li - ri;
+                std::mem::swap(&mut lhs, &mut rhs);
+                result.plus = self.plus;
             }
+            result.digit = (lhs + rhs).digit;
+            result
         }
-        result
     }
 }
 
@@ -237,10 +247,8 @@ fn check_same_sign_minus() {
     let b = BigInt::from([12; KETA]);
     let mut expected = BigInt::from([11; KETA]);
     assert_eq!(b - a, expected);
-    println!("{}", b - a);
     expected.plus = !expected.plus;
     assert_eq!(a - b, expected);
-    println!("{}", a - b);
 
     println!("trivial plus-plus subtraction");
     let mut a = BigInt::from([1; KETA]);
@@ -249,18 +257,18 @@ fn check_same_sign_minus() {
     b.plus = !b.plus;
     let mut expected = BigInt::from([11; KETA]);
     assert_eq!(a - b, expected);
-    println!("{}", a - b);
     expected.plus = !expected.plus;
     assert_eq!(b - a, expected);
-    println!("{}", b - a);
 }
 
 #[test]
 fn check_different_sign_minus() {
     // trivial subtraction
-    let a = BigInt::from([1; KETA]);
-    let b = BigInt::from([12; KETA]);
-    println!("{}", (a - b) - b);
+    let mut a = BigInt::from([1; KETA]);
+    let mut b = BigInt::from([12; KETA]);
+    a.plus = !a.plus;
+    println!("{:?}", a - b);
+    println!("{:?}", b - a);
 }
 
 impl ops::Mul<BigInt> for BigInt {
