@@ -90,7 +90,11 @@ impl fmt::Display for BigInt {
         for i in 0..most_d - 1 {
             res = format!(
                 "{}{}",
-                format!("{:0RLENGTH$}", self.digit[i], RLENGTH = 9),
+                format!(
+                    "{:0RLENGTH$}",
+                    self.digit[i],
+                    RLENGTH = RADIX.to_string().len() - 1
+                ),
                 res
             );
         }
@@ -109,7 +113,11 @@ impl fmt::Debug for BigInt {
         for i in 0..KETA {
             res = format!(
                 "{}{}",
-                format!("{:0RLENGTH$}", self.digit[i], RLENGTH = 9),
+                format!(
+                    "{:0RLENGTH$}",
+                    self.digit[i],
+                    RLENGTH = RLENGTH = RADIX.to_string().len() - 1
+                ),
                 res
             );
         }
@@ -332,6 +340,11 @@ fn check_mul() {
     let b = BigInt::from("48231904");
     assert_eq!(BigInt::from("1989034148133441174528"), a * b);
     println!("{:?}", a * b);
+
+    println!("{:?}", 111111111111111111111111111111111f64);
+    println!("{:?}", std::u64::MAX);
+    println!("{:?}", RADIX.to_string().len());
+    println!("{:?}", RADIX == 10u64.pow(9));
 
     // fail by FFT
     // let a = BigInt::from("888888888888888888888888888888");
