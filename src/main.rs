@@ -75,16 +75,7 @@ impl fmt::Display for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
         let sign = if self.plus { '+' } else { '-' };
-        let most_d: usize = {
-            let mut msd: usize = KETA;
-            for i in (0..KETA).rev() {
-                if self.digit[i] != 0 {
-                    msd = i + 1;
-                    break;
-                }
-            }
-            msd
-        };
+        let most_d: usize = self.most_d();
         for i in 0..most_d - 1 {
             res = format!(
                 "{}{}",
@@ -166,6 +157,17 @@ impl BigInt {
         }
         res
     }
+    // get most significant digit position
+    fn most_d(&self) -> usize {
+        let mut msd = KETA;
+        for i in (0..KETA).rev() {
+            if self.digit[i] != 0 {
+                msd = i + 1;
+                break;
+            }
+        }
+        msd
+    }
 }
 
 // operations
@@ -193,17 +195,8 @@ impl ops::Add<BigInt> for BigInt {
             result.plus = self.plus;
             let mut carry: DigitT = 0;
             // ignore 0 prefix
-            let most_d: usize = {
-                let mut msd: usize = KETA;
-                for i in (0..KETA).rev() {
-                    if self.digit[i] != 0 || rhs.digit[i] != 0 {
-                        msd = i + 1;
-                        break;
-                    }
-                }
-                // carryがあるので+1
-                std::cmp::min(msd + 1, KETA)
-            };
+            // consider carry, we need to see most_d of operands + 1
+            let most_d = std::cmp::min(std::cmp::max(self.most_d(), rhs.most_d()) + 1, KETA);
             for i in 0..most_d {
                 let sum: DigitT = self.digit[i] + rhs.digit[i] + carry;
                 result.digit[i] = sum % RADIX;
@@ -241,17 +234,7 @@ impl ops::Sub<BigInt> for BigInt {
                 std::mem::swap(&mut lhs, &mut rhs);
                 result.plus = !self.plus;
             }
-            // subtract
-            let most_d: usize = {
-                let mut msd: usize = KETA;
-                for i in (0..KETA).rev() {
-                    if lhs.digit[i] != 0 || rhs.digit[i] != 0 {
-                        msd = i + 1;
-                        break;
-                    }
-                }
-                msd
-            };
+            let most_d = std::cmp::min(lhs.most_d(), rhs.most_d());
             for i in 0..most_d {
                 let li = lhs.digit[i] - borrow;
                 let ri = rhs.digit[i];
