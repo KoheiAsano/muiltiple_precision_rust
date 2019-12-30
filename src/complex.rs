@@ -4,11 +4,34 @@ struct Complex {
     re: f64,
     im: f64,
 }
+
+// constructors
+#[allow(dead_code)]
+impl Complex {
+    fn new(re: f64, im: f64) -> Self {
+        Complex { re: re, im: im }
+    }
+    fn zero() -> Self {
+        Complex { re: 0.0, im: 0.0 }
+    }
+    fn i() -> Self {
+        Complex { re: 0.0, im: 1.0 }
+    }
+    fn root(n: usize) -> Self {
+        Complex {
+            re: (2.0 * std::f64::consts::PI / n as f64).cos(),
+            im: (2.0 * std::f64::consts::PI / n as f64).sin(),
+        }
+    }
+}
+
 impl PartialEq for Complex {
     fn eq(&self, other: &Complex) -> bool {
         (self.re - other.re).abs() < 10e-9 && (self.im - other.im).abs() < 10e-9
     }
 }
+
+// Operations
 impl ops::Add<Complex> for Complex {
     type Output = Self;
     fn add(self, rhs: Complex) -> Self::Output {
@@ -55,6 +78,7 @@ impl ops::DivAssign<Complex> for Complex {
     }
 }
 
+// operations to primitive numbers
 macro_rules! impl_ops {
     ($I:ty) => {
         impl ops::Add<$I> for Complex {
@@ -106,6 +130,7 @@ macro_rules! impl_ops {
 impl_ops!(f64);
 impl_ops!(usize);
 
+// convert from primitives
 macro_rules! impl_from {
     ($T:ty) => {
         impl From<$T> for Complex {
@@ -122,23 +147,10 @@ macro_rules! impl_from {
 impl_from!(f64);
 impl_from!(u64);
 impl_from!(i64);
+
+// additional operations
 #[allow(dead_code)]
 impl Complex {
-    fn new(re: f64, im: f64) -> Self {
-        Complex { re: re, im: im }
-    }
-    fn zero() -> Self {
-        Complex { re: 0.0, im: 0.0 }
-    }
-    fn i() -> Self {
-        Complex { re: 0.0, im: 1.0 }
-    }
-    fn root(n: usize) -> Self {
-        Complex {
-            re: (2.0 * std::f64::consts::PI / n as f64).cos(),
-            im: (2.0 * std::f64::consts::PI / n as f64).sin(),
-        }
-    }
     fn pow(self, mut n: usize) -> Self {
         let mut ret = Complex::new(1.0, 0.0);
         let mut base = self;
