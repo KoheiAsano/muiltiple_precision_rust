@@ -33,22 +33,46 @@ impl From<[DigitT; KETA]> for BigInt {
     }
 }
 
-// BigInt from DigitT less than RADIX^2
-impl From<DigitT> for BigInt {
-    fn from(u: DigitT) -> Self {
-        let mut d = [0; KETA];
-        if u >= RADIX.pow(2) {
-            panic!("unimplement initialized by over RADIX^2")
-        } else {
-            d[1] = u / RADIX;
-            d[0] = u % RADIX;
+// BigInt from primitive less than RADIX^2
+macro_rules! from_primitive {
+    ($U:ty) => {
+        impl From<$U> for BigInt {
+            fn from(u: $U) -> Self {
+                let u = u as DigitT;
+                let mut d = [0; KETA];
+                if u >= RADIX.pow(2) {
+                    panic!("unimplement initialized by over RADIX^2")
+                } else {
+                    d[1] = u / RADIX;
+                    d[0] = u % RADIX;
+                }
+                BigInt {
+                    digit: d,
+                    plus: true,
+                }
+            }
         }
-        BigInt {
-            digit: d,
-            plus: true,
-        }
-    }
+    };
 }
+from_primitive!(DigitT);
+// from_primitive!(usize);
+// from_primitive!(f64);
+
+// impl From<DigitT> for BigInt {
+//     fn from(u: DigitT) -> Self {
+//         let mut d = [0; KETA];
+//         if u >= RADIX.pow(2) {
+//             panic!("unimplement initialized by over RADIX^2")
+//         } else {
+//             d[1] = u / RADIX;
+//             d[0] = u % RADIX;
+//         }
+//         BigInt {
+//             digit: d,
+//             plus: true,
+//         }
+//     }
+// }
 
 // Display number
 // (+/-)11111....
@@ -131,6 +155,34 @@ impl BigInt {
         }
         true
     }
+}
+
+// multiply 10
+impl BigInt {
+    fn mul_10(&self) -> Self {
+        let mut res = BigInt::new();
+        let mut carry = 0;
+        let mut tmpcarry;
+        for i in (0..KETA).rev() {
+            tmpcarry = (self.digit[i] + carry) * 10 / RADIX;
+            res.digit[i] = (self.digit[i] + carry) * 10 % RADIX;
+            carry = tmpcarry;
+        }
+        if carry != 0 {
+            panic!("overflow! by mul10");
+        }
+        res
+    }
+}
+#[test]
+fn check_mul10() {
+    // trivial
+    let a = BigInt::from(10);
+    assert_eq!(a.mul_10(), BigInt::from(100));
+
+    // carry
+    let a = BigInt::from(10e8 as DigitT);
+    assert_eq!(a.mul_10(), BigInt::from(10e9 as DigitT));
 }
 
 // operations
