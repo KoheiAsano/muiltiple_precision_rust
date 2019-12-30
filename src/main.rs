@@ -3,9 +3,9 @@ mod complex;
 use std::fmt;
 use std::ops;
 // 10digit_t.pow(9)
-const KETA: usize = 6;
+const KETA: usize = 100;
 type DigitT = u64;
-const RADIX: DigitT = 1000000000;
+const RADIX: DigitT = 10000000;
 
 // KETAが最上位桁, 0が最下位桁
 #[derive(Clone, Copy)]
@@ -347,28 +347,28 @@ fn check_mul() {
     println!("{:?}", RADIX == 10u64.pow(9));
 
     // fail by FFT
-    // let a = BigInt::from("888888888888888888888888888888");
-    // let b = BigInt::from("999999999999999999999");
-    // assert_eq!(
-    //     BigInt::from("888888888888888888887999999999111111111111111111112"),
-    //     a * b
-    // );
-    // println!("{:?}", a * b);
+    let a = BigInt::from("888888888888888888888888888888");
+    let b = BigInt::from("999999999999999999999");
+    assert_eq!(
+        BigInt::from("888888888888888888887999999999111111111111111111112"),
+        a * b
+    );
+    println!("{:?}", a * b);
 
     // fail by FFT
-    // let a = BigInt::from("543247823184372189426374123789");
-    // let b = BigInt::from("5423789537982734482319");
-    // assert_eq!(
-    //     BigInt::from("2946461859919292271212567654121269375800000137786691"),
-    //     a * b
-    // );
-    // println!("{:?}", a * b);
+    let a = BigInt::from("543247823184372189426374123789");
+    let b = BigInt::from("5423789537982734482319");
+    assert_eq!(
+        BigInt::from("2946461859919292271212567654121269375800000137786691"),
+        a * b
+    );
+    println!("{:?}", a * b);
 
     // fail by FFT
-    // let a = BigInt::from("789423174982");
-    // let b = BigInt::from("423167842318");
-    // println!("{:?}", BigInt::from("334058501632957898488276"));
-    // assert_eq!(BigInt::from("334058501632957898488276"), a * b);
+    let a = BigInt::from("789423174982");
+    let b = BigInt::from("423167842318");
+    println!("{:?}", BigInt::from("334058501632957898488276"));
+    assert_eq!(BigInt::from("334058501632957898488276"), a * b);
 
     // overflow
     // let a = BigInt::from("1000000000");
