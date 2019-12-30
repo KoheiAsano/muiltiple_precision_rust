@@ -1,8 +1,9 @@
 mod complex;
+
 use std::fmt;
 use std::ops;
 // 10digit_t.pow(9)
-const KETA: usize = 3;
+const KETA: usize = 6;
 type DigitT = u64;
 const RADIX: DigitT = 1000000000;
 
@@ -246,8 +247,6 @@ impl ops::Sub<BigInt> for BigInt {
                 std::mem::swap(&mut lhs, &mut rhs);
                 result.plus = !lhs.plus;
             }
-            println!("l={:?}", lhs);
-            println!("r={:?}", rhs);
             let most_d = std::cmp::max(lhs.most_d(), rhs.most_d());
             for i in 0..most_d {
                 let li = lhs.digit[i] - borrow;
@@ -280,10 +279,88 @@ impl ops::Mul<BigInt> for BigInt {
     type Output = BigInt;
 
     fn mul(self, rhs: BigInt) -> BigInt {
-        // Unimplement
-        println!("{} * {}", self, rhs);
-        self
+        // check overflow
+        let lhsd = self.most_d();
+        let rhsd = rhs.most_d();
+        let resd = lhsd + rhsd - 1;
+        if resd > KETA {
+            panic!("overflow by multiply {} {}", self, rhs);
+        }
+        let sign = !(self.plus ^ rhs.plus);
+        // FFT
+        let mut lhsv = self.digit.to_vec();
+        lhsv.truncate(lhsd);
+        let mut rhsv = rhs.digit.to_vec();
+        rhsv.truncate(rhsd);
+
+        let resv = complex::convolution(lhsv, rhsv);
+        println!("res= {:?}", resv);
+        // carry calc
+        let mut res = BigInt::new();
+        let mut carry = 0;
+
+        for i in 0..resd {
+            res.digit[i] = (resv[i] + carry) % RADIX;
+            carry = (resv[i] + carry) / RADIX;
+            println!("{:?}", carry);
+        }
+        println!("{:?}", res);
+        // add carry to +1
+        // if resd == KETA, carry is calculated
+        if carry != 0 && resd < KETA {
+            res.digit[resd] += carry;
+        } else if carry != 0 && resd > KETA {
+            panic!("overflow by multiply {} {}", self, rhs);
+        }
+        res.plus = sign;
+        res
     }
+}
+#[test]
+fn check_mul() {
+    let a = BigInt::from("32");
+    let b = BigInt::from("1000000000");
+    assert_eq!(BigInt::from("32000000000"), a * b);
+    println!("{:?}", a * b);
+
+    let a = BigInt::from("452378947239841");
+    let b = BigInt::from("43");
+    assert_eq!(BigInt::from("19452294731313163"), a * b);
+    println!("{:?}", a * b);
+
+    let a = BigInt::from("41238972198432");
+    let b = BigInt::from("48231904");
+    assert_eq!(BigInt::from("1989034148133441174528"), a * b);
+    println!("{:?}", a * b);
+
+    // fail by FFT
+    // let a = BigInt::from("888888888888888888888888888888");
+    // let b = BigInt::from("999999999999999999999");
+    // assert_eq!(
+    //     BigInt::from("888888888888888888887999999999111111111111111111112"),
+    //     a * b
+    // );
+    // println!("{:?}", a * b);
+
+    // fail by FFT
+    // let a = BigInt::from("543247823184372189426374123789");
+    // let b = BigInt::from("5423789537982734482319");
+    // assert_eq!(
+    //     BigInt::from("2946461859919292271212567654121269375800000137786691"),
+    //     a * b
+    // );
+    // println!("{:?}", a * b);
+
+    // fail by FFT
+    // let a = BigInt::from("789423174982");
+    // let b = BigInt::from("423167842318");
+    // println!("{:?}", BigInt::from("334058501632957898488276"));
+    // assert_eq!(BigInt::from("334058501632957898488276"), a * b);
+
+    // overflow
+    // let a = BigInt::from("1000000000");
+    // let b = BigInt::from("1000000000");
+    // a * b;
 }
 
 mod tests {
@@ -358,17 +435,10 @@ mod tests {
         assert_eq!(a.mul_10(), BigInt::from(10));
         let a = BigInt::from(10);
         assert_eq!(a.mul_10(), BigInt::from(100));
-        println!("{:?}", a.digit);
-        println!("{:?}", a.mul_10().digit);
 
         // carry
         let a = BigInt::from(10e8 as DigitT);
         assert_eq!(a.mul_10(), BigInt::from(10e9 as DigitT));
-        println!("{:?}", a.digit);
-        println!("{:?}", a.mul_10().digit);
-        println!("{:?}", 10e8 as u64 / RADIX);
-        println!("{:?}", 10e8 as u64);
-        println!("{:?}", 10e1);
     }
 
     #[test]
