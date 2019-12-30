@@ -45,13 +45,6 @@ impl From<String> for BigInt {
         res
     }
 }
-#[test]
-fn check_from_string() {
-    let i = BigInt::from(String::from("10"));
-    assert_eq!(i, BigInt::from(10));
-    let i = BigInt::from(String::from("1000000000"));
-    assert_eq!(i, BigInt::from(10e9 as DigitT));
-}
 
 // BigInt from primitive less than RADIX^2
 macro_rules! from_primitive {
@@ -145,8 +138,9 @@ impl PartialEq for BigInt {
     }
 }
 
-// abs comparison >=
+// methods
 impl BigInt {
+    // abs comparison >=
     fn abs_is_bigger(&self, other: BigInt) -> bool {
         for i in (0..KETA).rev() {
             if self.digit[i] > other.digit[i] {
@@ -157,10 +151,7 @@ impl BigInt {
         }
         true
     }
-}
-
-// multiply 10
-impl BigInt {
+    // multiply by 10
     fn mul_10(&self) -> Self {
         let mut res = BigInt::new();
         let mut carry = 0;
@@ -175,18 +166,6 @@ impl BigInt {
         }
         res
     }
-}
-#[test]
-fn check_mul10() {
-    // trivial
-    let a = BigInt::from(1);
-    assert_eq!(a.mul_10(), BigInt::from(10));
-    let a = BigInt::from(10);
-    assert_eq!(a.mul_10(), BigInt::from(100));
-
-    // carry
-    let a = BigInt::from(10e8 as DigitT);
-    assert_eq!(a.mul_10(), BigInt::from(10e9 as DigitT));
 }
 
 // operations
@@ -386,5 +365,26 @@ mod tests {
         let b = BigInt::from([12; KETA]);
         println!("{:?}", -a - b);
         println!("{:?}", b - -a);
+    }
+
+    #[test]
+    fn check_mul10() {
+        // trivial
+        let a = BigInt::from(1);
+        assert_eq!(a.mul_10(), BigInt::from(10));
+        let a = BigInt::from(10);
+        assert_eq!(a.mul_10(), BigInt::from(100));
+
+        // carry
+        let a = BigInt::from(10e8 as DigitT);
+        assert_eq!(a.mul_10(), BigInt::from(10e9 as DigitT));
+    }
+
+    #[test]
+    fn check_from_string() {
+        let i = BigInt::from(String::from("10"));
+        assert_eq!(i, BigInt::from(10));
+        let i = BigInt::from(String::from("1000000000"));
+        assert_eq!(i, BigInt::from(10e9 as DigitT));
     }
 }
