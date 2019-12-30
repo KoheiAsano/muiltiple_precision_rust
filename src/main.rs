@@ -23,9 +23,26 @@ impl BigInt {
     }
 }
 
-// digit_t配列から正数を作る
+// BigInt from DigitT array
 impl From<[DigitT; KETA]> for BigInt {
     fn from(d: [DigitT; KETA]) -> Self {
+        BigInt {
+            digit: d,
+            plus: true,
+        }
+    }
+}
+
+// BigInt from DigitT less than RADIX^2
+impl From<DigitT> for BigInt {
+    fn from(u: DigitT) -> Self {
+        let mut d = [0; KETA];
+        if u >= RADIX.pow(2) {
+            panic!("unimplement initialized by over RADIX^2")
+        } else {
+            d[1] = u / RADIX;
+            d[0] = u % RADIX;
+        }
         BigInt {
             digit: d,
             plus: true,
