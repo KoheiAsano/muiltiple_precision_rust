@@ -192,7 +192,7 @@ mod tests {
         }
     }
     #[test]
-    fn check_ops() {
+    fn check_ops_with_primitives() {
         // addition
         let mut z = Complex::zero();
         assert_eq!(z + 1, Complex::new(1.0, 0.0));
