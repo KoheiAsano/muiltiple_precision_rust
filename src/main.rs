@@ -146,7 +146,7 @@ impl BigInt {
         for i in (0..KETA).rev() {
             if self.digit[i] > other.digit[i] {
                 return true;
-            } else {
+            } else if self.digit[i] < other.digit[i] {
                 return false;
             }
         }
@@ -238,14 +238,17 @@ impl ops::Sub<BigInt> for BigInt {
         // calculate sign and swap
         // (+a) - (+b), (-a) - (-b) => sign*|a| - |b|
         // (-a) - (+b), (+a) - (-b) => sign*|a| + |b|
+        // left side must be bigger than rhs
         if lhs.plus ^ rhs.plus == false {
-            if self.abs_is_bigger(rhs) {
-                result.plus = self.plus;
+            if lhs.abs_is_bigger(rhs) {
+                result.plus = lhs.plus;
             } else {
                 std::mem::swap(&mut lhs, &mut rhs);
-                result.plus = !self.plus;
+                result.plus = !lhs.plus;
             }
-            let most_d = std::cmp::min(lhs.most_d(), rhs.most_d());
+            println!("l={:?}", lhs);
+            println!("r={:?}", rhs);
+            let most_d = std::cmp::max(lhs.most_d(), rhs.most_d());
             for i in 0..most_d {
                 let li = lhs.digit[i] - borrow;
                 let ri = rhs.digit[i];
@@ -341,15 +344,24 @@ mod tests {
     #[test]
     fn check_same_sign_sub() {
         println!("trivial plus-plus subtraction");
-        let a = BigInt::from([1; KETA]);
-        let b = BigInt::from([12; KETA]);
-        let expected = BigInt::from([11; KETA]);
-        assert_eq!(b - a, expected);
-        assert_eq!(a - b, -expected);
+        // let a = BigInt::from("1111111111111111111111");
+        // let b = BigInt::from(12);
+        // let expected = BigInt::from("1111111111111111111099");
+        // assert_eq!(b - a, -expected);
+        // assert_eq!(a - b, expected);
 
-        println!("trivial minus-minus subtraction");
-        assert_eq!(-a - -b, expected);
-        assert_eq!(-b - -a, -expected);
+        // println!("trivial minus-minus subtraction");
+        // assert_eq!(-a - -b, -expected);
+        // assert_eq!(-b - -a, expected);
+
+        let a = BigInt::from("542378932487543");
+        let b = BigInt::from("99999999999");
+        let expected = BigInt::from("542278932487544");
+        assert_eq!(b - a, -expected);
+        assert_eq!(a - b, expected);
+
+        assert_eq!(-a - -b, -expected);
+        assert_eq!(-b - -a, expected);
     }
 
     #[test]
@@ -357,7 +369,6 @@ mod tests {
         println!("different sign minus");
         let a = BigInt::from("1111111111111111111111");
         let b = BigInt::from(12);
-        println!("{:?}", b);
         assert_eq!(BigInt::from("1111111111111111111099"), a - b);
     }
 
@@ -394,6 +405,5 @@ mod tests {
         // // negative
         let i = BigInt::from("-1000000000");
         assert_eq!(i, -BigInt::from(10e8 as DigitT));
-        let i = BigInt::from("9999999999999999");
     }
 }
