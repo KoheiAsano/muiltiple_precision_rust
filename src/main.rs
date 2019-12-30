@@ -34,11 +34,21 @@ impl From<[DigitT; KETA]> for BigInt {
 }
 
 // BigInt from String
-// adapt only positive number
-impl From<String> for BigInt {
-    fn from(s: String) -> Self {
+impl From<&str> for BigInt {
+    fn from(s: &str) -> Self {
+        if s.len() == 0 {
+            panic!("empty string");
+        }
+        let mut s = s;
         let mut res = BigInt::new();
-        for b in s.as_bytes() {
+        let f = s.chars().nth(0).unwrap();
+        if f == '-' {
+            res.plus = false;
+            s = &s[1..];
+        } else if f == '+' {
+            s = &s[1..];
+        }
+        for b in s.as_bytes().iter() {
             res = res.mul_10();
             res.digit[0] += (*b - '0' as u8) as DigitT;
         }
@@ -145,6 +155,7 @@ impl BigInt {
     // multiply by 10
     fn mul_10(&self) -> Self {
         let mut res = BigInt::new();
+        res.plus = self.plus;
         let mut carry = 0;
         let mut tmpcarry;
         for i in 0..KETA {
@@ -365,9 +376,16 @@ mod tests {
 
     #[test]
     fn check_from_string() {
-        let i = BigInt::from(String::from("10"));
+        // trivial
+        let i = BigInt::from("10");
         assert_eq!(i, BigInt::from(10));
-        let i = BigInt::from(String::from("1000000000"));
+        // // carry
+        let i = BigInt::from("1000000000");
         assert_eq!(i, BigInt::from(10e9 as DigitT));
+        let i = BigInt::from("1000000000000");
+        assert_eq!(i, BigInt::from(10e12 as DigitT));
+        // // negative
+        let i = BigInt::from("-1000000000");
+        assert_eq!(i, -BigInt::from(10e9 as DigitT));
     }
 }
