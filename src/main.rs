@@ -81,7 +81,7 @@ from_primitive!(DigitT);
 impl fmt::Display for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
-        let sign = if self.plus { '-' } else { '+' };
+        let sign = if self.plus { '+' } else { '-' };
         let most_d: usize = {
             let mut msd: usize = KETA;
             for i in (0..KETA).rev() {
@@ -109,7 +109,7 @@ impl fmt::Display for BigInt {
 impl fmt::Debug for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
-        let sign = if self.plus { '-' } else { '+' };
+        let sign = if self.plus { '+' } else { '-' };
 
         for i in 0..KETA {
             res = format!(
