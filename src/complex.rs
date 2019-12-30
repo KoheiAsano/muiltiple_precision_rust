@@ -122,7 +122,7 @@ macro_rules! impl_from {
 impl_from!(f64);
 impl_from!(u64);
 impl_from!(i64);
-
+#[allow(dead_code)]
 impl Complex {
     fn new(re: f64, im: f64) -> Self {
         Complex { re: re, im: im }
@@ -160,6 +160,7 @@ impl Complex {
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
     #[test]
     fn check_i() {
