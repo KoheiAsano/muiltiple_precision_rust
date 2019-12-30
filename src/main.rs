@@ -271,7 +271,7 @@ impl ops::Sub<BigInt> for BigInt {
 }
 
 #[test]
-fn check_same_sign_minus() {
+fn check_same_sign_sub() {
     println!("trivial plus-plus subtraction");
     let a = BigInt::from([1; KETA]);
     let b = BigInt::from([12; KETA]);
@@ -285,7 +285,7 @@ fn check_same_sign_minus() {
 }
 
 #[test]
-fn check_different_sign_minus() {
+fn check_different_sign_sub() {
     println!("different sign minus");
     let a = BigInt::from([1; KETA]);
     let b = BigInt::from([12; KETA]);
