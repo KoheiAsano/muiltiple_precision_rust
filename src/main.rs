@@ -33,8 +33,8 @@ impl From<[DigitT; KETA]> for BigInt {
     }
 }
 
-//Display number
-// +11111
+// Display number
+// (+/-)11111....
 impl fmt::Display for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
@@ -61,7 +61,8 @@ impl fmt::Display for BigInt {
         write!(f, "{}{}", sign, res)
     }
 }
-
+// Format for Debug
+// (+/-)00...1111
 impl fmt::Debug for BigInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut res: String = String::new();
@@ -78,7 +79,7 @@ impl fmt::Debug for BigInt {
     }
 }
 
-// 32KETA以上の場合はPartialEq がunderivable
+// array which length is over 32 can't derive PartialEq
 impl PartialEq for BigInt {
     fn eq(&self, other: &Self) -> bool {
         // temporary ignore zero's sign
@@ -101,7 +102,7 @@ impl PartialEq for BigInt {
     }
 }
 
-// 絶対値の大小比較 >=
+// abs comparison >=
 impl BigInt {
     fn abs_is_bigger(&self, other: BigInt) -> bool {
         for i in (0..KETA).rev() {
@@ -115,6 +116,7 @@ impl BigInt {
     }
 }
 
+// operations
 impl std::ops::Neg for BigInt {
     type Output = BigInt;
 
@@ -234,8 +236,6 @@ impl ops::Mul<BigInt> for BigInt {
         self
     }
 }
-
-fn main() {}
 
 mod tests {
     #[allow(unused_imports)]
