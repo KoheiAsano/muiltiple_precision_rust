@@ -159,8 +159,8 @@ impl BigInt {
         let mut carry = 0;
         let mut tmpcarry;
         for i in 0..KETA {
-            tmpcarry = (self.digit[i] + carry) * 10 / RADIX;
-            res.digit[i] = (self.digit[i] + carry) * 10 % RADIX;
+            tmpcarry = (self.digit[i] * 10 + carry) / RADIX;
+            res.digit[i] = (self.digit[i] * 10 + carry) % RADIX;
             carry = tmpcarry;
         }
         if carry != 0 {
@@ -355,10 +355,10 @@ mod tests {
     #[test]
     fn check_different_sign_sub() {
         println!("different sign minus");
-        let a = BigInt::from([1; KETA]);
-        let b = BigInt::from([12; KETA]);
-        println!("{:?}", -a - b);
-        println!("{:?}", b - -a);
+        let a = BigInt::from("1111111111111111111111");
+        let b = BigInt::from(12);
+        println!("{:?}", b);
+        assert_eq!(BigInt::from("1111111111111111111099"), a - b);
     }
 
     #[test]
@@ -368,10 +368,17 @@ mod tests {
         assert_eq!(a.mul_10(), BigInt::from(10));
         let a = BigInt::from(10);
         assert_eq!(a.mul_10(), BigInt::from(100));
+        println!("{:?}", a.digit);
+        println!("{:?}", a.mul_10().digit);
 
         // carry
         let a = BigInt::from(10e8 as DigitT);
         assert_eq!(a.mul_10(), BigInt::from(10e9 as DigitT));
+        println!("{:?}", a.digit);
+        println!("{:?}", a.mul_10().digit);
+        println!("{:?}", 10e8 as u64 / RADIX);
+        println!("{:?}", 10e8 as u64);
+        println!("{:?}", 10e1);
     }
 
     #[test]
@@ -381,11 +388,12 @@ mod tests {
         assert_eq!(i, BigInt::from(10));
         // // carry
         let i = BigInt::from("1000000000");
-        assert_eq!(i, BigInt::from(10e9 as DigitT));
+        assert_eq!(i, BigInt::from(10e8 as DigitT));
         let i = BigInt::from("1000000000000");
-        assert_eq!(i, BigInt::from(10e12 as DigitT));
+        assert_eq!(i, BigInt::from(10e11 as DigitT));
         // // negative
         let i = BigInt::from("-1000000000");
-        assert_eq!(i, -BigInt::from(10e9 as DigitT));
+        assert_eq!(i, -BigInt::from(10e8 as DigitT));
+        let i = BigInt::from("9999999999999999");
     }
 }
