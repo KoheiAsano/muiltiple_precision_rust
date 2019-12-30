@@ -264,7 +264,7 @@ impl ops::Sub<BigInt> for BigInt {
                     result.digit[i] = li - ri;
                 } else {
                     borrow = 1;
-                    result.digit[i] = RADIX + li - ri;
+                    result.digit[i] = li + RADIX - ri;
                 }
             }
             result
@@ -321,66 +321,6 @@ impl ops::Mul<BigInt> for BigInt {
         res
     }
 }
-#[test]
-fn check_mul() {
-    let a = BigInt::from("32");
-    let b = BigInt::from("1000000000");
-    assert_eq!(BigInt::from("32000000000"), a * b);
-    println!("{:?}", a * b);
-
-    let a = BigInt::from("452378947239841");
-    let b = BigInt::from("43");
-    assert_eq!(BigInt::from("19452294731313163"), a * b);
-    println!("{:?}", a * b);
-
-    let a = BigInt::from("41238972198432");
-    let b = BigInt::from("48231904");
-    assert_eq!(BigInt::from("1989034148133441174528"), a * b);
-    println!("{:?}", a * b);
-
-    // fail by FFT in RADIX 10e8
-    let a = BigInt::from("888888888888888888888888888888");
-    let b = BigInt::from("999999999999999999999");
-    assert_eq!(
-        BigInt::from("888888888888888888887999999999111111111111111111112"),
-        a * b
-    );
-    println!("{:?}", a * b);
-
-    // fail by FFT in RADIX 10e8
-    let a = BigInt::from("543247823184372189426374123789");
-    let b = BigInt::from("5423789537982734482319");
-    assert_eq!(
-        BigInt::from("2946461859919292271212567654121269375800000137786691"),
-        a * b
-    );
-    println!("{:?}", a * b);
-
-    // fail by FFT in RADIX 10e8
-    let a = BigInt::from("789423174982");
-    let b = BigInt::from("423167842318");
-    println!("{:?}", BigInt::from("334058501632957898488276"));
-    assert_eq!(BigInt::from("334058501632957898488276"), a * b);
-
-    //
-    let a = BigInt::from("7452389175894327895723854328795743289");
-    let b = BigInt::from("421367823487587526374856287563287463");
-    assert_eq!(
-        BigInt::from("3140197006829049027326400623755143724244440804108280978168630025460085807"),
-        a * b
-    );
-
-    let a = BigInt::from(
-        "4321897534278979840982390789375247892789573894371890539289031059831724095809483229008092",
-    );
-    let b = BigInt::from(
-        "4321897534278979840982390789375247892789573894371890539289031059831724095809483229008092",
-    );
-    assert_eq!(
-        BigInt::from("18678798296806725729632843531724954588411763967224168026859565546943628803082105789221693575021621123151092717582962258522556308702085309879175138442985230798847117578201480464"),
-        a * b
-    );
-}
 
 mod tests {
     #[allow(unused_imports)]
@@ -400,10 +340,14 @@ mod tests {
         let b = BigInt::from("12354765243432432");
         assert_eq!(a + b, BigInt::from("24709530486864864"));
 
+        let a = BigInt::from("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
+        let b = BigInt::from("1");
+        assert_eq!(a + b, BigInt::from("10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"));
+
         println!("minus-minus addition");
-        let a = BigInt::from("-12354765243432432");
-        let b = BigInt::from("-12354765243432432");
-        assert_eq!(a + b, BigInt::from("-24709530486864864"));
+        let a = BigInt::from("-5890653482749054327862489");
+        let b = BigInt::from("-5234789102849789543298094821");
+        assert_eq!(a + b, BigInt::from("-5240679756332538597625957310"));
     }
 
     #[test]
@@ -417,10 +361,11 @@ mod tests {
 
     #[test]
     fn check_same_sign_sub() {
+        // failed
         println!("trivial plus-plus subtraction");
-        let a = BigInt::from("1111111111111111111111");
-        let b = BigInt::from(12);
-        let expected = BigInt::from("1111111111111111111099");
+        let a = BigInt::from("1000000000000000000000000000000000");
+        let b = BigInt::from(1);
+        let expected = BigInt::from("999999999999999999999999999999999");
         assert_eq!(b - a, -expected);
         assert_eq!(a - b, expected);
 
@@ -473,5 +418,68 @@ mod tests {
         // // negative
         let i = BigInt::from("-1000000000");
         assert_eq!(i, -BigInt::from(10e8 as DigitT));
+    }
+
+    #[test]
+    fn check_mul() {
+        let a = BigInt::from("32");
+        let b = BigInt::from("1000000000");
+        assert_eq!(BigInt::from("32000000000"), a * b);
+        println!("{:?}", a * b);
+
+        let a = BigInt::from("452378947239841");
+        let b = BigInt::from("43");
+        assert_eq!(BigInt::from("19452294731313163"), a * b);
+        println!("{:?}", a * b);
+
+        let a = BigInt::from("41238972198432");
+        let b = BigInt::from("48231904");
+        assert_eq!(BigInt::from("1989034148133441174528"), a * b);
+        println!("{:?}", a * b);
+
+        // fail by FFT in RADIX 10e8
+        let a = BigInt::from("888888888888888888888888888888");
+        let b = BigInt::from("999999999999999999999");
+        assert_eq!(
+            BigInt::from("888888888888888888887999999999111111111111111111112"),
+            a * b
+        );
+        println!("{:?}", a * b);
+
+        // fail by FFT in RADIX 10e8
+        let a = BigInt::from("543247823184372189426374123789");
+        let b = BigInt::from("5423789537982734482319");
+        assert_eq!(
+            BigInt::from("2946461859919292271212567654121269375800000137786691"),
+            a * b
+        );
+        println!("{:?}", a * b);
+
+        // fail by FFT in RADIX 10e8
+        let a = BigInt::from("789423174982");
+        let b = BigInt::from("423167842318");
+        println!("{:?}", BigInt::from("334058501632957898488276"));
+        assert_eq!(BigInt::from("334058501632957898488276"), a * b);
+
+        //
+        let a = BigInt::from("7452389175894327895723854328795743289");
+        let b = BigInt::from("421367823487587526374856287563287463");
+        assert_eq!(
+            BigInt::from(
+                "3140197006829049027326400623755143724244440804108280978168630025460085807"
+            ),
+            a * b
+        );
+
+        let a = BigInt::from(
+        "4321897534278979840982390789375247892789573894371890539289031059831724095809483229008092",
+    );
+        let b = BigInt::from(
+        "4321897534278979840982390789375247892789573894371890539289031059831724095809483229008092",
+    );
+        assert_eq!(
+        BigInt::from("18678798296806725729632843531724954588411763967224168026859565546943628803082105789221693575021621123151092717582962258522556308702085309879175138442985230798847117578201480464"),
+        a * b
+    );
     }
 }
