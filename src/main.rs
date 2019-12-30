@@ -116,7 +116,7 @@ impl fmt::Debug for BigInt {
                 format!(
                     "{:0RLENGTH$}",
                     self.digit[i],
-                    RLENGTH = RLENGTH = RADIX.to_string().len() - 1
+                    RLENGTH = RADIX.to_string().len() - 1
                 ),
                 res
             );
