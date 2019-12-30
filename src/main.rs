@@ -3,13 +3,13 @@ use std::fmt;
 use std::ops;
 // 10digit_t.pow(9)
 const KETA: usize = 3;
-type digit_t = u64;
-const RADIX: digit_t = 1000000000;
+type DigitT = u64;
+const RADIX: DigitT = 1000000000;
 
 // KETAが最上位桁, 0が最下位桁
 #[derive(Clone, Copy)]
 pub struct BigInt {
-    digit: [digit_t; KETA],
+    digit: [DigitT; KETA],
     plus: bool,
 }
 
@@ -24,8 +24,8 @@ impl BigInt {
 }
 
 // digit_t配列から正数を作る
-impl From<[digit_t; KETA]> for BigInt {
-    fn from(d: [digit_t; KETA]) -> Self {
+impl From<[DigitT; KETA]> for BigInt {
+    fn from(d: [DigitT; KETA]) -> Self {
         BigInt {
             digit: d,
             plus: true,
@@ -137,7 +137,7 @@ impl ops::Add<BigInt> for BigInt {
 
         if self.plus ^ rhs.plus == false {
             result.plus = self.plus;
-            let mut carry: digit_t = 0;
+            let mut carry: DigitT = 0;
             // ignore 0 prefix
             let most_d: usize = {
                 let mut msd: usize = KETA;
@@ -151,7 +151,7 @@ impl ops::Add<BigInt> for BigInt {
                 std::cmp::min(msd + 1, KETA)
             };
             for i in 0..most_d {
-                let sum: digit_t = self.digit[i] + rhs.digit[i] + carry;
+                let sum: DigitT = self.digit[i] + rhs.digit[i] + carry;
                 result.digit[i] = sum % RADIX;
                 carry = if sum >= RADIX { 1 } else { 0 };
             }
@@ -175,7 +175,7 @@ impl ops::Sub<BigInt> for BigInt {
     fn sub(self, rhs: BigInt) -> BigInt {
         let mut lhs = self;
         let mut rhs = rhs;
-        let mut borrow: digit_t = 0;
+        let mut borrow: DigitT = 0;
         let mut result: BigInt = BigInt::from([0; KETA]);
         // calculate sign and swap
         // (+a) - (+b), (-a) - (-b) => sign*|a| - |b|
