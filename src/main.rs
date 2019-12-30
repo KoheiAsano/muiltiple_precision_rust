@@ -302,7 +302,6 @@ impl ops::Mul<BigInt> for BigInt {
         rhsv.truncate(rhsd);
 
         let resv = complex::convolution(lhsv, rhsv);
-        println!("res= {:?}", resv);
         // carry calc
         let mut res = BigInt::new();
         let mut carry = 0;
@@ -310,9 +309,7 @@ impl ops::Mul<BigInt> for BigInt {
         for i in 0..resd {
             res.digit[i] = (resv[i] + carry) % RADIX;
             carry = (resv[i] + carry) / RADIX;
-            println!("{:?}", carry);
         }
-        println!("{:?}", res);
         // add carry to +1
         // if resd == KETA, carry is calculated
         if carry != 0 && resd < KETA {
@@ -341,12 +338,7 @@ fn check_mul() {
     assert_eq!(BigInt::from("1989034148133441174528"), a * b);
     println!("{:?}", a * b);
 
-    println!("{:?}", 111111111111111111111111111111111f64);
-    println!("{:?}", std::u64::MAX);
-    println!("{:?}", RADIX.to_string().len());
-    println!("{:?}", RADIX == 10u64.pow(9));
-
-    // fail by FFT
+    // fail by FFT in RADIX 10e8
     let a = BigInt::from("888888888888888888888888888888");
     let b = BigInt::from("999999999999999999999");
     assert_eq!(
@@ -355,7 +347,7 @@ fn check_mul() {
     );
     println!("{:?}", a * b);
 
-    // fail by FFT
+    // fail by FFT in RADIX 10e8
     let a = BigInt::from("543247823184372189426374123789");
     let b = BigInt::from("5423789537982734482319");
     assert_eq!(
@@ -364,16 +356,30 @@ fn check_mul() {
     );
     println!("{:?}", a * b);
 
-    // fail by FFT
+    // fail by FFT in RADIX 10e8
     let a = BigInt::from("789423174982");
     let b = BigInt::from("423167842318");
     println!("{:?}", BigInt::from("334058501632957898488276"));
     assert_eq!(BigInt::from("334058501632957898488276"), a * b);
 
-    // overflow
-    // let a = BigInt::from("1000000000");
-    // let b = BigInt::from("1000000000");
-    // a * b;
+    //
+    let a = BigInt::from("7452389175894327895723854328795743289");
+    let b = BigInt::from("421367823487587526374856287563287463");
+    assert_eq!(
+        BigInt::from("3140197006829049027326400623755143724244440804108280978168630025460085807"),
+        a * b
+    );
+
+    let a = BigInt::from(
+        "4321897534278979840982390789375247892789573894371890539289031059831724095809483229008092",
+    );
+    let b = BigInt::from(
+        "4321897534278979840982390789375247892789573894371890539289031059831724095809483229008092",
+    );
+    assert_eq!(
+        BigInt::from("18678798296806725729632843531724954588411763967224168026859565546943628803082105789221693575021621123151092717582962258522556308702085309879175138442985230798847117578201480464"),
+        a * b
+    );
 }
 
 mod tests {
