@@ -20,17 +20,6 @@ impl BigInt {
             plus: true,
         }
     }
-    // 絶対値の大小比較 >=
-    fn absIsBigger(&self, other: BigInt) -> bool {
-        for i in (0..KETA).rev() {
-            if self.digit[i] > other.digit[i] {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        true
-    }
 }
 
 // u64配列から正数を作る
@@ -111,6 +100,20 @@ impl PartialEq for BigInt {
     }
 }
 
+// 絶対値の大小比較 >=
+impl BigInt {
+    fn abs_is_bigger(&self, other: BigInt) -> bool {
+        for i in (0..KETA).rev() {
+            if self.digit[i] > other.digit[i] {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 impl std::ops::Neg for BigInt {
     type Output = BigInt;
 
@@ -177,7 +180,7 @@ impl ops::Sub<BigInt> for BigInt {
         // (+a) - (+b), (-a) - (-b) => sign*|a| - |b|
         // (-a) - (+b), (+a) - (-b) => sign*|a| + |b|
         if lhs.plus ^ rhs.plus == false {
-            if self.absIsBigger(rhs) {
+            if self.abs_is_bigger(rhs) {
                 result.plus = self.plus;
             } else {
                 std::mem::swap(&mut lhs, &mut rhs);
@@ -209,7 +212,7 @@ impl ops::Sub<BigInt> for BigInt {
         } else {
             // let rhs's sign be same to lhs
             rhs.plus = lhs.plus;
-            if self.absIsBigger(rhs) {
+            if self.abs_is_bigger(rhs) {
                 result.plus = self.plus;
             } else {
                 std::mem::swap(&mut lhs, &mut rhs);
@@ -234,6 +237,7 @@ impl ops::Mul<BigInt> for BigInt {
 fn main() {}
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
     #[test]
     fn check_negation() {
