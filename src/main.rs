@@ -13,7 +13,7 @@ pub struct BigInt {
     plus: bool,
 }
 
-// 0で初期化
+// init by 0
 impl BigInt {
     fn new() -> Self {
         BigInt {
@@ -31,6 +31,26 @@ impl From<[DigitT; KETA]> for BigInt {
             plus: true,
         }
     }
+}
+
+// BigInt from String
+// adapt only positive number
+impl From<String> for BigInt {
+    fn from(s: String) -> Self {
+        let mut res = BigInt::new();
+        for b in s.as_bytes() {
+            res = res.mul_10();
+            res.digit[0] += (*b - '0' as u8) as DigitT;
+        }
+        res
+    }
+}
+#[test]
+fn check_from_string() {
+    let i = BigInt::from(String::from("10"));
+    assert_eq!(i, BigInt::from(10));
+    let i = BigInt::from(String::from("1000000000"));
+    assert_eq!(i, BigInt::from(10e9 as DigitT));
 }
 
 // BigInt from primitive less than RADIX^2
@@ -55,24 +75,6 @@ macro_rules! from_primitive {
     };
 }
 from_primitive!(DigitT);
-// from_primitive!(usize);
-// from_primitive!(f64);
-
-// impl From<DigitT> for BigInt {
-//     fn from(u: DigitT) -> Self {
-//         let mut d = [0; KETA];
-//         if u >= RADIX.pow(2) {
-//             panic!("unimplement initialized by over RADIX^2")
-//         } else {
-//             d[1] = u / RADIX;
-//             d[0] = u % RADIX;
-//         }
-//         BigInt {
-//             digit: d,
-//             plus: true,
-//         }
-//     }
-// }
 
 // Display number
 // (+/-)11111....
@@ -163,7 +165,7 @@ impl BigInt {
         let mut res = BigInt::new();
         let mut carry = 0;
         let mut tmpcarry;
-        for i in (0..KETA).rev() {
+        for i in 0..KETA {
             tmpcarry = (self.digit[i] + carry) * 10 / RADIX;
             res.digit[i] = (self.digit[i] + carry) * 10 % RADIX;
             carry = tmpcarry;
@@ -177,6 +179,8 @@ impl BigInt {
 #[test]
 fn check_mul10() {
     // trivial
+    let a = BigInt::from(1);
+    assert_eq!(a.mul_10(), BigInt::from(10));
     let a = BigInt::from(10);
     assert_eq!(a.mul_10(), BigInt::from(100));
 
