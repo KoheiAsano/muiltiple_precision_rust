@@ -121,14 +121,7 @@ impl std::ops::Neg for BigInt {
         }
     }
 }
-#[test]
-fn check_negation() {
-    let a = BigInt::from([5; KETA]);
-    let mut expected = BigInt::from([5; KETA]);
-    expected.plus = !expected.plus;
-    assert_eq!(-a, expected);
-    assert_eq!(a, -expected);
-}
+
 impl ops::Add<BigInt> for BigInt {
     type Output = BigInt;
 
@@ -170,48 +163,6 @@ impl ops::Add<BigInt> for BigInt {
         }
         result
     }
-}
-#[test]
-fn check_same_sign_add() {
-    println!("plus-plus addition");
-    let a = BigInt::from([5; KETA]);
-    let b = BigInt::from([5; KETA]);
-    assert_eq!(a + b, BigInt::from([10; KETA]));
-
-    println!("plus-plus carry addition");
-    println!("...500000000500000000 + ...500000000500000000 = ...1000000001000000000",);
-    let mut a = BigInt::from([10u64.pow(9) / 2; KETA]);
-    let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
-    a.digit[KETA - 1] = 0;
-    b.digit[KETA - 1] = 0;
-    let mut expected = BigInt::from([1; KETA]);
-    expected.digit[0] = 0;
-    assert_eq!(a + b, expected);
-
-    println!("minus-minus addition");
-    let a = BigInt::from([3; KETA]);
-    let b = BigInt::from([3; KETA]);
-    let expected = BigInt::from([6; KETA]);
-    assert_eq!(-a + -b, -expected);
-
-    println!("carry minus-minus addition");
-    println!("-...500000000500000000 + -...500000000500000000 = -...1000000001000000000",);
-    let mut a = BigInt::from([10u64.pow(9) / 2; KETA]);
-    let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
-    a.digit[KETA - 1] = 0;
-    b.digit[KETA - 1] = 0;
-    let mut expected = BigInt::from([1; KETA]);
-    expected.digit[0] = 0;
-    assert_eq!(-a + -b, -expected);
-}
-
-#[test]
-fn check_different_sign_add() {
-    println!("plus-minus addition");
-    let a = BigInt::from([5; KETA]);
-    let b = BigInt::from([5; KETA]);
-    assert_eq!(a + -b, BigInt::from([0; KETA]));
-    assert_eq!(-b + a, BigInt::from([0; KETA]));
 }
 
 impl ops::Sub<BigInt> for BigInt {
@@ -270,29 +221,6 @@ impl ops::Sub<BigInt> for BigInt {
     }
 }
 
-#[test]
-fn check_same_sign_sub() {
-    println!("trivial plus-plus subtraction");
-    let a = BigInt::from([1; KETA]);
-    let b = BigInt::from([12; KETA]);
-    let expected = BigInt::from([11; KETA]);
-    assert_eq!(b - a, expected);
-    assert_eq!(a - b, -expected);
-
-    println!("trivial minus-minus subtraction");
-    assert_eq!(-a - -b, expected);
-    assert_eq!(-b - -a, -expected);
-}
-
-#[test]
-fn check_different_sign_sub() {
-    println!("different sign minus");
-    let a = BigInt::from([1; KETA]);
-    let b = BigInt::from([12; KETA]);
-    println!("{:?}", -a - b);
-    println!("{:?}", b - -a);
-}
-
 impl ops::Mul<BigInt> for BigInt {
     type Output = BigInt;
 
@@ -303,16 +231,82 @@ impl ops::Mul<BigInt> for BigInt {
     }
 }
 
-fn main() {
-    let b0 = BigInt::new();
-    println!("{}", b0);
-    let b1 = BigInt::new();
-    b0 + b1;
-    b0 * b1;
-}
+fn main() {}
 
 mod tests {
     use super::*;
     #[test]
-    fn check() {}
+    fn check_negation() {
+        let a = BigInt::from([5; KETA]);
+        let mut expected = BigInt::from([5; KETA]);
+        expected.plus = !expected.plus;
+        assert_eq!(-a, expected);
+        assert_eq!(a, -expected);
+    }
+
+    #[test]
+    fn check_same_sign_add() {
+        println!("plus-plus addition");
+        let a = BigInt::from([5; KETA]);
+        let b = BigInt::from([5; KETA]);
+        assert_eq!(a + b, BigInt::from([10; KETA]));
+
+        println!("plus-plus carry addition");
+        println!("...500000000500000000 + ...500000000500000000 = ...1000000001000000000",);
+        let mut a = BigInt::from([10u64.pow(9) / 2; KETA]);
+        let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
+        a.digit[KETA - 1] = 0;
+        b.digit[KETA - 1] = 0;
+        let mut expected = BigInt::from([1; KETA]);
+        expected.digit[0] = 0;
+        assert_eq!(a + b, expected);
+
+        println!("minus-minus addition");
+        let a = BigInt::from([3; KETA]);
+        let b = BigInt::from([3; KETA]);
+        let expected = BigInt::from([6; KETA]);
+        assert_eq!(-a + -b, -expected);
+
+        println!("carry minus-minus addition");
+        println!("-...500000000500000000 + -...500000000500000000 = -...1000000001000000000",);
+        let mut a = BigInt::from([10u64.pow(9) / 2; KETA]);
+        let mut b = BigInt::from([10u64.pow(9) / 2; KETA]);
+        a.digit[KETA - 1] = 0;
+        b.digit[KETA - 1] = 0;
+        let mut expected = BigInt::from([1; KETA]);
+        expected.digit[0] = 0;
+        assert_eq!(-a + -b, -expected);
+    }
+
+    #[test]
+    fn check_different_sign_add() {
+        println!("plus-minus addition");
+        let a = BigInt::from([5; KETA]);
+        let b = BigInt::from([5; KETA]);
+        assert_eq!(a + -b, BigInt::from([0; KETA]));
+        assert_eq!(-b + a, BigInt::from([0; KETA]));
+    }
+
+    #[test]
+    fn check_same_sign_sub() {
+        println!("trivial plus-plus subtraction");
+        let a = BigInt::from([1; KETA]);
+        let b = BigInt::from([12; KETA]);
+        let expected = BigInt::from([11; KETA]);
+        assert_eq!(b - a, expected);
+        assert_eq!(a - b, -expected);
+
+        println!("trivial minus-minus subtraction");
+        assert_eq!(-a - -b, expected);
+        assert_eq!(-b - -a, -expected);
+    }
+
+    #[test]
+    fn check_different_sign_sub() {
+        println!("different sign minus");
+        let a = BigInt::from([1; KETA]);
+        let b = BigInt::from([12; KETA]);
+        println!("{:?}", -a - b);
+        println!("{:?}", b - -a);
+    }
 }
