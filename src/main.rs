@@ -262,7 +262,10 @@ impl BigInt {
             return (BigInt::new(), *self);
         }
 
-        // if divisor < BigInt::from(RADIX) {}
+        if !divisor.abs_is_bigger(BigInt::from(RADIX)) {
+            let (q, r): (BigInt, DigitT) = self.positive_division_by_d(divisor.digit[0]);
+            return (q, BigInt::from(r));
+        }
 
         (q, r)
     }
@@ -271,7 +274,23 @@ impl BigInt {
 #[test]
 fn check_positive_division() {
     let a = BigInt::from("11111111111111111111111111111111111111111111111111");
-    let b = BigInt::from("999");
+    let b = BigInt::from(11);
+    assert_eq!(
+        (
+            BigInt::from("1010101010101010101010101010101010101010101010101"),
+            BigInt::from(0)
+        ),
+        a.positive_division(b)
+    );
+    let a = BigInt::from("1111111111111111111111111111111111111111111111111");
+    let b = BigInt::from(11);
+    assert_eq!(
+        (
+            BigInt::from("101010101010101010101010101010101010101010101010"),
+            BigInt::from(1)
+        ),
+        a.positive_division(b)
+    );
 }
 
 #[test]
