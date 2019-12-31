@@ -125,7 +125,7 @@ impl fmt::Debug for BigInt {
     }
 }
 
-// array which length is over 32 can't derive PartialEq
+// array which length is over 32 can't derive PartialEq, PartialOrd
 impl PartialEq for BigInt {
     fn eq(&self, other: &Self) -> bool {
         // temporary ignore zero's sign
@@ -146,6 +146,45 @@ impl PartialEq for BigInt {
             true
         }
     }
+}
+
+impl Eq for BigInt {}
+
+impl PartialOrd for BigInt {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for BigInt {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self.plus ^ other.plus {
+            if self.plus {
+                return std::cmp::Ordering::Greater;
+            } else {
+                return std::cmp::Ordering::Less;
+            }
+        }
+        for i in (0..KETA).rev() {
+            if self.digit[i] < other.digit[i] {
+                return std::cmp::Ordering::Less;
+            } else if self.digit[i] > other.digit[i] {
+                return std::cmp::Ordering::Greater;
+            }
+        }
+        std::cmp::Ordering::Equal
+    }
+}
+
+#[test]
+fn check_cmp() {
+    let a = BigInt::from("11111111111111111111111111111111111111111111111111");
+    let b = BigInt::from("999");
+    assert!(a > b);
+    assert!(a >= b);
+    let a = BigInt::from("-11111111111111111111111111111111111111111111111111");
+    let b = BigInt::from("999");
+    assert!(a < b);
+    assert!(a <= b);
 }
 
 // methods
@@ -223,7 +262,7 @@ impl BigInt {
             return (BigInt::new(), *self);
         }
 
-        if divisor < BigInt::from(RADIX) {}
+        // if divisor < BigInt::from(RADIX) {}
 
         (q, r)
     }
