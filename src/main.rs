@@ -257,14 +257,15 @@ impl ops::Sub<BigInt> for BigInt {
             }
             let most_d = std::cmp::max(lhs.most_d(), rhs.most_d());
             for i in 0..most_d {
-                let li = lhs.digit[i] - borrow;
-                let ri = rhs.digit[i];
+                // to prevent underflow, cast to signed temporarily
+                let li = lhs.digit[i] as i64 - borrow as i64;
+                let ri = rhs.digit[i] as i64;
                 if li >= ri {
                     borrow = 0;
-                    result.digit[i] = li - ri;
+                    result.digit[i] = (li - ri) as u64;
                 } else {
                     borrow = 1;
-                    result.digit[i] = li + RADIX - ri;
+                    result.digit[i] = (li + RADIX as i64 - ri) as u64;
                 }
             }
             result
