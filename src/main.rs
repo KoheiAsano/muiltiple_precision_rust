@@ -7,7 +7,7 @@ const KETA: usize = 100;
 type DigitT = u64;
 const RADIX: DigitT = 10000000;
 
-// KETAが最上位桁, 0が最下位桁
+// little endian
 #[derive(Clone, Copy)]
 pub struct BigInt {
     digit: [DigitT; KETA],
