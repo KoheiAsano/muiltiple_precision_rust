@@ -281,7 +281,7 @@ impl BigInt {
         let mut r = BigInt::new();
         if divisor == BigInt::from(0) {
             panic!("zero division when positive_division");
-        } else if divisor.abs_is_bigger(*self) {
+        } else if !self.abs_is_bigger(divisor) {
             return (BigInt::new(), *self);
         }
         // if divisor is less than RADIX, execute d division
