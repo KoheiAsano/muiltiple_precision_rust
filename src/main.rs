@@ -188,6 +188,57 @@ impl BigInt {
         }
         msd
     }
+    // division by DigitT
+    // return quotient and remainder
+    fn positive_division_by_d(&self, divisor: DigitT) -> (BigInt, DigitT) {
+        if divisor == 0 {
+            panic!("zero division when positive_division_by_d");
+        }
+        let mut q = BigInt::new();
+        let msd = self.most_d();
+        // variable for managing remainder + digit
+        let mut tmpq: DigitT;
+        let mut remainder: DigitT = self.digit[msd - 1];
+        let mut num: DigitT = self.digit[msd - 1];
+        for i in (0..msd).rev() {
+            tmpq = num / divisor;
+            remainder = num % divisor;
+            q.digit[i] = tmpq;
+            // avoid -1 access
+            if i == 0 {
+                break;
+            }
+            num = remainder * RADIX + self.digit[i - 1];
+        }
+
+        (q, remainder)
+    }
+}
+
+#[test]
+fn check_division_by_d() {
+    let a = BigInt::from("999");
+    let c = 7;
+    assert_eq!((BigInt::from(142), 5), a.positive_division_by_d(c));
+
+    let a = BigInt::from("11111111111111111111111111111111111111111111111111");
+    let c = 11;
+    assert_eq!(
+        (
+            BigInt::from("1010101010101010101010101010101010101010101010101"),
+            0
+        ),
+        a.positive_division_by_d(c)
+    );
+    let a = BigInt::from("1111111111111111111111111111111111111111111111111");
+    let c = 11;
+    assert_eq!(
+        (
+            BigInt::from("101010101010101010101010101010101010101010101010"),
+            1
+        ),
+        a.positive_division_by_d(c)
+    );
 }
 
 // operations
@@ -227,7 +278,6 @@ impl ops::Add<BigInt> for BigInt {
             }
         } else {
             // subtract
-            result = rhs - self;
             if self.plus {
                 result = -(-rhs - self);
             } else {
@@ -317,6 +367,17 @@ impl ops::Mul<BigInt> for BigInt {
         }
         res.plus = sign;
         res
+    }
+}
+
+// divmod
+impl ops::Div<BigInt> for BigInt {
+    type Output = BigInt;
+    fn div(self, rhs: BigInt) -> BigInt {
+        let lmd = self.most_d();
+        let rmd = rhs.most_d();
+
+        BigInt::new()
     }
 }
 
