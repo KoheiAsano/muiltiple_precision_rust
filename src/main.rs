@@ -253,15 +253,38 @@ impl BigInt {
         (q, remainder)
     }
 
+    // subtarct until divisor > divided
+    fn naive_positive_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
+        if divisor == BigInt::from(0) {
+            panic!("zero division when positive_division");
+        } else if !self.abs_is_bigger(divisor) {
+            return (BigInt::new(), *self);
+        }
+        // if divisor is less than RADIX, execute d division
+        if !divisor.abs_is_bigger(BigInt::from(RADIX)) {
+            let (q, r): (BigInt, DigitT) = self.positive_division_by_d(divisor.digit[0]);
+            return (q, BigInt::from(r));
+        }
+        // copy variables
+        let mut rhs = *self;
+        let mut qd: DigitT = 0;
+        while rhs.abs_is_bigger(divisor) {
+            rhs = rhs - divisor;
+            qd += 1;
+        }
+
+        (BigInt::from(qd), rhs)
+    }
+
     fn positive_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
         let mut q = BigInt::new();
         let mut r = BigInt::new();
         if divisor == BigInt::from(0) {
-            panic!("zero division when positive_division_by_d");
+            panic!("zero division when positive_division");
         } else if divisor.abs_is_bigger(*self) {
             return (BigInt::new(), *self);
         }
-
+        // if divisor is less than RADIX, execute d division
         if !divisor.abs_is_bigger(BigInt::from(RADIX)) {
             let (q, r): (BigInt, DigitT) = self.positive_division_by_d(divisor.digit[0]);
             return (q, BigInt::from(r));
@@ -272,7 +295,18 @@ impl BigInt {
 }
 
 #[test]
-fn check_positive_division() {
+fn check_positive_naive_division() {
+    let a = BigInt::from("33333333333333333333333333333333333333333333333333");
+    let b = BigInt::from("11111111111111111111111111111111111111111111111111");
+    assert_eq!(
+        a.naive_positive_division(b),
+        (BigInt::from(3), BigInt::from(0))
+    );
+    assert_eq!(b.naive_positive_division(a), (BigInt::from(0), b));
+}
+
+#[test]
+fn check_positive_division_divisor_smaller_than_RADIX() {
     let a = BigInt::from("11111111111111111111111111111111111111111111111111");
     let b = BigInt::from(11);
     assert_eq!(
