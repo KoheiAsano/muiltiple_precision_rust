@@ -189,7 +189,7 @@ impl BigInt {
         msd
     }
     // division by DigitT
-    // return quotient and remainder
+    // return quotient and remainder tuple
     fn positive_division_by_d(&self, divisor: DigitT) -> (BigInt, DigitT) {
         if divisor == 0 {
             panic!("zero division when positive_division_by_d");
@@ -213,10 +213,26 @@ impl BigInt {
 
         (q, remainder)
     }
+
+    fn positive_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
+        let mut q = BigInt::new();
+        let mut r = BigInt::new();
+        if divisor == BigInt::from(0) {
+            panic!("zero division when positive_division_by_d");
+        }
+
+        (q, r)
+    }
 }
 
 #[test]
-fn check_division_by_d() {
+fn check_positive_division_by_d() {
+    let a = BigInt::from("11111111111111111111111111111111111111111111111111");
+    let b = BigInt::from("999");
+}
+
+#[test]
+fn check_positive_division_by_d() {
     let a = BigInt::from("999");
     let c = 7;
     assert_eq!((BigInt::from(142), 5), a.positive_division_by_d(c));
