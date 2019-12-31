@@ -255,10 +255,13 @@ impl BigInt {
 
     // subtarct until divisor > divided
     fn naive_positive_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
+        // zero div panic
         if divisor == BigInt::from(0) {
             panic!("zero division when positive_division");
-        } else if !self.abs_is_bigger(divisor) {
-            return (BigInt::new(), *self);
+        }
+        // if self < divisor => quotient = 0, remainder = self
+        if !self.abs_is_bigger(divisor) {
+            return (BigInt::from(0), *self);
         }
         // if divisor is less than RADIX, execute d division
         if !divisor.abs_is_bigger(BigInt::from(RADIX)) {
@@ -279,10 +282,13 @@ impl BigInt {
     fn positive_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
         let mut q = BigInt::new();
         let mut r = BigInt::new();
+        // zero div panic
         if divisor == BigInt::from(0) {
             panic!("zero division when positive_division");
-        } else if !self.abs_is_bigger(divisor) {
-            return (BigInt::new(), *self);
+        }
+        // if self < divisor => quotient = 0, remainder = self
+        if !self.abs_is_bigger(divisor) {
+            return (BigInt::from(0), *self);
         }
         // if divisor is less than RADIX, execute d division
         if !divisor.abs_is_bigger(BigInt::from(RADIX)) {
