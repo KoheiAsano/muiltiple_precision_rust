@@ -219,14 +219,18 @@ impl BigInt {
         let mut r = BigInt::new();
         if divisor == BigInt::from(0) {
             panic!("zero division when positive_division_by_d");
+        } else if divisor.abs_is_bigger(*self) {
+            return (BigInt::new(), *self);
         }
+
+        if divisor < BigInt::from(RADIX) {}
 
         (q, r)
     }
 }
 
 #[test]
-fn check_positive_division_by_d() {
+fn check_positive_division() {
     let a = BigInt::from("11111111111111111111111111111111111111111111111111");
     let b = BigInt::from("999");
 }
