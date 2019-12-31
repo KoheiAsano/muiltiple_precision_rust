@@ -209,7 +209,7 @@ impl ops::Add<BigInt> for BigInt {
         let mut result: BigInt = BigInt::new();
 
         // (+a) + (+b), (-a) + (-b) => sign*|a| + |b|
-        // (-a) - (+b), (+a) - (-b) => sign*|b| - |a|
+        // (-a) + (+b), (+a) + (-b) => sign*|b| - |a|
 
         if self.plus ^ rhs.plus == false {
             result.plus = self.plus;
@@ -226,6 +226,8 @@ impl ops::Add<BigInt> for BigInt {
                 panic!("overflow!");
             }
         } else {
+            // subtract
+            result = rhs - self;
             if self.plus {
                 result = -(-rhs - self);
             } else {
@@ -243,7 +245,7 @@ impl ops::Sub<BigInt> for BigInt {
         let mut lhs = self;
         let mut rhs = rhs;
         let mut borrow: DigitT = 0;
-        let mut result: BigInt = BigInt::from([0; KETA]);
+        let mut result: BigInt = BigInt::new();
         // calculate sign and swap
         // (+a) - (+b), (-a) - (-b) => sign*|a| - |b|
         // (-a) - (+b), (+a) - (-b) => sign*|a| + |b|
@@ -270,14 +272,9 @@ impl ops::Sub<BigInt> for BigInt {
             }
             result
         } else {
-            // let rhs's sign be same to lhs
+            // let rhs's sign be same to lhs and result
             rhs.plus = lhs.plus;
-            if self.abs_is_bigger(rhs) {
-                result.plus = self.plus;
-            } else {
-                std::mem::swap(&mut lhs, &mut rhs);
-                result.plus = self.plus;
-            }
+            result.plus = rhs.plus;
             result.digit = (lhs + rhs).digit;
             result
         }
@@ -391,6 +388,17 @@ mod tests {
         let b = BigInt::from(12);
         assert_eq!(BigInt::from("-1111111111111111111123"), -a - b);
         assert_eq!(BigInt::from("1111111111111111111123"), a - -b);
+
+        let a = BigInt::from("10000000000000000000000000000000000000000");
+        let b = BigInt::from("-12");
+        assert_eq!(
+            BigInt::from("-9999999999999999999999999999999999999988"),
+            -a - b
+        );
+        assert_eq!(
+            BigInt::from("9999999999999999999999999999999999999988"),
+            a - -b
+        );
     }
 
     #[test]
