@@ -216,7 +216,7 @@ impl BigInt {
         }
         res
     }
-    // get most significant digit position
+    // get most significant digit position (index + 1)
     fn most_d(&self) -> usize {
         let mut msd = KETA;
         for i in (0..KETA).rev() {
@@ -279,7 +279,7 @@ impl BigInt {
         (BigInt::from(qd), rhs)
     }
 
-    fn positive_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
+    fn positive_knuth_division(&self, divisor: BigInt) -> (BigInt, BigInt) {
         let mut q = BigInt::new();
         let mut r = BigInt::new();
         // zero div panic
@@ -290,14 +290,71 @@ impl BigInt {
         if !self.abs_is_bigger(divisor) {
             return (BigInt::from(0), *self);
         }
+        let dividend_msd = self.most_d() - 1;
+        let divisor_msd = divisor.most_d() - 1;
         // if divisor is less than RADIX, execute d division
-        if !divisor.abs_is_bigger(BigInt::from(RADIX)) {
+        if divisor_msd == 0 {
             let (q, r): (BigInt, DigitT) = self.positive_division_by_d(divisor.digit[0]);
             return (q, BigInt::from(r));
         }
 
+        let mut isFirst = 1;
+        let mut divided_copy = *self;
+        let mut q = BigInt::new();
+        let mut r = BigInt::new();
+        loop {
+            let s = divided_copy.most_d() + isFirst;
+
+            let u = if divided_copy.digit[s] < divisor.digit[divisor_msd] {
+                s - divisor_msd
+            } else {
+                s - divisor_msd + 1
+            };
+            let mut qtmp = (divided_copy.digit[s] * RADIX + divided_copy.digit[s - 1])
+                / divisor.digit[divisor_msd];
+            let mut rtmp = (divided_copy.digit[s] * RADIX + divided_copy.digit[s - 1])
+                / divisor.digit[divisor_msd];
+
+            while rtmp < RADIX
+                && qtmp * divisor.digit[divisor_msd - 1] > RADIX * rtmp + divided_copy.digit[s - 2]
+            {
+                qtmp -= 1;
+                rtmp += divisor.digit[divisor_msd];
+            }
+            q.digit[u] = qtmp;
+
+            // a -= divisor *qh* RADIX^u
+            let mut divisor_r_p_u = divisor;
+            for _ in 0..u {
+                divisor_r_p_u = divisor_r_p_u * BigInt::from(RADIX);
+            }
+            divided_copy = divided_copy - divisor_r_p_u * BigInt::from(qtmp);
+            if !divided_copy.plus {
+                q.digit[u] -= 1;
+                divided_copy = divided_copy + divisor_r_p_u;
+            }
+            if u <= 0 {
+                break;
+            } else {
+                isFirst = 0;
+            }
+        }
+        let r = divided_copy
+            .naive_positive_division(BigInt::from(RADIX / (1 + divisor.digit[divisor_msd])))
+            .1;
+
         (q, r)
     }
+}
+
+#[test]
+fn check_knuth_d() {
+    let a = BigInt::from("33333333333333333333333333333333333333333333333333");
+    let b = BigInt::from("11111111111111111111111111111111111111111111111111");
+    assert_eq!(
+        a.positive_knuth_division(b),
+        (BigInt::from(3), BigInt::from(0))
+    );
 }
 
 #[test]
@@ -309,10 +366,15 @@ fn check_positive_naive_division() {
         (BigInt::from(3), BigInt::from(0))
     );
     assert_eq!(b.naive_positive_division(a), (BigInt::from(0), b));
+    assert_eq!(
+        a.naive_positive_division(b),
+        (BigInt::from(3), BigInt::from(0))
+    );
+    assert_eq!(b.naive_positive_division(a), (BigInt::from(0), b));
 }
 
 #[test]
-fn check_positive_division_divisor_smaller_than_RADIX() {
+fn check_naive_positive_division_divisor_smaller_than_RADIX() {
     let a = BigInt::from("11111111111111111111111111111111111111111111111111");
     let b = BigInt::from(11);
     assert_eq!(
@@ -320,7 +382,7 @@ fn check_positive_division_divisor_smaller_than_RADIX() {
             BigInt::from("1010101010101010101010101010101010101010101010101"),
             BigInt::from(0)
         ),
-        a.positive_division(b)
+        a.naive_positive_division(b)
     );
     let a = BigInt::from("1111111111111111111111111111111111111111111111111");
     let b = BigInt::from(11);
@@ -329,7 +391,7 @@ fn check_positive_division_divisor_smaller_than_RADIX() {
             BigInt::from("101010101010101010101010101010101010101010101010"),
             BigInt::from(1)
         ),
-        a.positive_division(b)
+        a.naive_positive_division(b)
     );
 }
 
